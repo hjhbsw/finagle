@@ -1,6 +1,7 @@
 package com.twitter.finagle.loadbalancer
 
 import com.twitter.conversions.time._
+import com.twitter.finagle.loadbalancer.ConsistentHash.ConsistentHashBalancer
 import com.twitter.finagle.loadbalancer.aperture.{ApertureLeastLoaded, AperturePeakEwma}
 import com.twitter.finagle.loadbalancer.heap.HeapLeastLoaded
 import com.twitter.finagle.loadbalancer.p2c.{P2CLeastLoaded, P2CPeakEwma}
@@ -372,6 +373,26 @@ object Balancers {
     ): ServiceFactory[Req, Rep] = {
       val sr = params[param.Stats].statsReceiver
       newScopedBal(sr, "round_robin", new RoundRobinBalancer(endpoints, sr, exc, maxEffort))
+    }
+  }
+
+  /**
+    *
+
+    * @param virtualNodeNum
+    * @return
+    */
+  def consistentHash(
+    virtualNodeNum: Int
+  ): LoadBalancerFactory = new LoadBalancerFactory {
+    override def toString: String = "ConsistentHash"
+    def newBalancer[Req, Rep](
+       endpoints: Activity[IndexedSeq[EndpointFactory[Req, Rep]]],
+       exc: NoBrokersAvailableException,
+       params: Stack.Params
+     ): ServiceFactory[Req, Rep] = {
+      val sr = params[param.Stats].statsReceiver
+      newScopedBal(sr, "round_consistentHash", new ConsistentHashBalancer(endpoints, sr, exc, 1,virtualNodeNum))
     }
   }
 }

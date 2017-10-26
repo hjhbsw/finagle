@@ -18,7 +18,7 @@ import scala.collection.JavaConverters._
  * Base class for Request and Response.  There are both input and output
  * methods, though only one set of methods should be used.
  */
-abstract class Message {
+abstract class Message extends MessageHeader{
 
   private[this] var _content: Buf = Buf.Empty
   private[this] var _version: Version = Version.Http11
@@ -112,7 +112,7 @@ abstract class Message {
     if (chunked) clearContent()
   }
 
-  def headerMap: HeaderMap = _headerMap
+  override def headerMap: HeaderMap = _headerMap
 
   /**
    * Cookies. In a request, this uses the Cookie headers.

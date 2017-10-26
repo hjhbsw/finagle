@@ -3,6 +3,9 @@ package com.twitter.finagle
 import com.twitter.finagle.util.InetSocketAddressUtil.unconnected
 import com.twitter.util.{Closable, Future, Time}
 import java.net.SocketAddress
+
+import com.twitter.finagle.http.MessageHeader
+
 import scala.util.control.NonFatal
 
 object Service {
@@ -148,6 +151,28 @@ abstract class ServiceFactory[-Req, +Rep]
    */
   final def apply(): Future[Service[Req, Rep]] = this(ClientConnection.nil)
 
+  def apply(req:Req) : Future[Service[Req, Rep]] = {
+
+    if(req.isInstanceOf[MessageHeader])
+    {
+        val req1 = req.asInstanceOf[MessageHeader]
+
+        val value  = req1.headerMap.getOrNull("CAll-ID")
+
+        if(value != null){
+          this(new HeadConnection(value))
+        }
+        else{
+          this(ClientConnection.nil);
+        }
+
+    }
+    else{
+      this(ClientConnection.nil)
+    }
+
+
+  }
   /**
    * Apply `f` on created services, returning the resulting Future in their
    * stead. This is useful for implementing common factory wrappers that
@@ -192,6 +217,13 @@ abstract class ServiceFactory[-Req, +Rep]
    * Return `true` if and only if [[status]] is currently [[Status.Open]].
    */
   final def isAvailable: Boolean = status == Status.Open
+}
+
+case class HeadConnection(stickyId : String) extends ClientConnection{
+  def remoteAddress: SocketAddress = unconnected
+  def localAddress: SocketAddress = unconnected
+  def close(deadline: Time): Future[Unit] = Future.Done
+  def onClose: Future[Unit] = Future.never
 }
 
 object ServiceFactory {
@@ -304,7 +336,7 @@ object FactoryToService {
  */
 class FactoryToService[Req, Rep](factory: ServiceFactory[Req, Rep]) extends Service[Req, Rep] {
   def apply(request: Req): Future[Rep] =
-    factory().flatMap { service =>
+    factory(request).flatMap { service =>
       service(request).ensure {
         service.close()
       }

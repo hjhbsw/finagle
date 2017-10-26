@@ -7,7 +7,7 @@ import com.twitter.finagle.ServiceFactory
  * load metric that is used. [[DistributorT]]'s will use these to decide
  * where to balance the next request.
  */
-private trait NodeT[Req, Rep] extends ServiceFactory[Req, Rep] {
+trait NodeT[Req, Rep] extends ServiceFactory[Req, Rep] {
 
   /**
    * The current load, in units of the active metric.
