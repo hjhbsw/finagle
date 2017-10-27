@@ -4,7 +4,7 @@ import com.twitter.finagle.util.InetSocketAddressUtil.unconnected
 import com.twitter.util.{Closable, Future, Time}
 import java.net.SocketAddress
 
-import com.twitter.finagle.http.MessageHeader
+import com.twitter.finagle.buoyant.h2.H2Header
 
 import scala.util.control.NonFatal
 
@@ -153,17 +153,16 @@ abstract class ServiceFactory[-Req, +Rep]
 
   def apply(req:Req) : Future[Service[Req, Rep]] = {
 
-    if(req.isInstanceOf[MessageHeader])
+    if(req.isInstanceOf[H2Header])
     {
-        val req1 = req.asInstanceOf[MessageHeader]
+        val req1 = req.asInstanceOf[H2Header]
 
-        val value  = req1.headerMap.getOrNull("CAll-ID")
+        req1.headers.get("call-id") match {
 
-        if(value != null){
-          this(new HeadConnection(value))
-        }
-        else{
-          this(ClientConnection.nil);
+          case None | Some("") => this(ClientConnection.nil);
+
+          case Some(token) => this(new HeadConnection(token))
+
         }
 
     }
