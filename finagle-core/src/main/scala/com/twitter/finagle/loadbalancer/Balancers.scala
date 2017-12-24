@@ -2,15 +2,17 @@ package com.twitter.finagle.loadbalancer
 
 import com.twitter.conversions.time._
 import com.twitter.finagle.loadbalancer.ConsistentHash.ConsistentHashBalancer
+import com.twitter.finagle.loadbalancer.IpAndRoundRobin.IpAndRoundRobinBalancer
 import com.twitter.finagle.loadbalancer.aperture.{ApertureLeastLoaded, AperturePeakEwma}
 import com.twitter.finagle.loadbalancer.heap.HeapLeastLoaded
 import com.twitter.finagle.loadbalancer.p2c.{P2CLeastLoaded, P2CPeakEwma}
 import com.twitter.finagle.loadbalancer.roundrobin.RoundRobinBalancer
-import com.twitter.finagle.{param, Stack}
+import com.twitter.finagle.{Stack, param}
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.util.Rng
-import com.twitter.finagle.{ServiceFactory, ServiceFactoryProxy, NoBrokersAvailableException}
-import com.twitter.util.{Activity, Duration, Future, Time, Stopwatch}
+import com.twitter.finagle.{NoBrokersAvailableException, ServiceFactory, ServiceFactoryProxy}
+import com.twitter.util.{Activity, Duration, Future, Stopwatch, Time}
+
 import scala.util.Random
 
 /**
@@ -376,6 +378,19 @@ object Balancers {
     }
   }
 
+  def ipAndRoundRobin(
+     maxEffort: Int = MaxEffort
+  ): LoadBalancerFactory = new LoadBalancerFactory {
+    override def toString: String = "IpAndRoundRobin"
+    def newBalancer[Req, Rep](
+       endpoints: Activity[IndexedSeq[EndpointFactory[Req, Rep]]],
+       exc: NoBrokersAvailableException,
+       params: Stack.Params
+    ): ServiceFactory[Req, Rep] = {
+      val sr = params[param.Stats].statsReceiver
+      newScopedBal(sr, "ip_round_robin", new IpAndRoundRobinBalancer(endpoints, sr, exc, maxEffort))
+    }
+  }
   /**
     *
 

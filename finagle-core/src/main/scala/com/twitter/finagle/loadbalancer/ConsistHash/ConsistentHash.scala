@@ -125,7 +125,7 @@ private[loadbalancer] final class ConsistentHashBalancer[Req, Rep](
 
       val hash: Int = getHash(callId)
 
-      DefaultLogger.log(Level.INFO,"pick with call-id ="+callId+",hash="+hash)
+      DefaultLogger.log(Level.INFO,"pick with session-id ="+callId+",hash="+hash)
 
       val sub: util.SortedMap[Int,Node] = map.tailMap(hash)
 

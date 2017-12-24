@@ -1,10 +1,10 @@
 package com.twitter.finagle.buoyant.h2
 
 trait H2Header {
-  def headers: Headers
+  def headers: HeadersUp
 }
 
-trait Headers {
+trait HeadersUp {
   def toSeq: Seq[(String, String)]
   def contains(k: String): Boolean
   def get(k: String): Option[String]
@@ -14,5 +14,5 @@ trait Headers {
   def remove(key: String): Seq[String]
 
   /** Create a deep copy. */
-  def dup(): Headers
+  def dup(): HeadersUp
 }

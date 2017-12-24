@@ -61,7 +61,7 @@ class ConsistentHashTest extends FunSuite {
     }
     val bal = newBal(Var(init))
     for (index <- 0 until R){
-      var callId = "call-id"+index
+      var callId = "session-id"+index
 
       bal(HeadConnection(callId))
 

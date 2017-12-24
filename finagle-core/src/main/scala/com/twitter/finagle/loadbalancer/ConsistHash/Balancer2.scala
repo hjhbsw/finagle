@@ -78,6 +78,8 @@ trait Balancer2[Req, Rep] extends ServiceFactory[Req, Rep] with BalancerNode2[Re
     updater(Rebuild(dist))
   }
 
+  override def apply(req: Req) = super.apply(req)
+
   // A counter that should be named "max_effort_exhausted".
   // Due to a scalac compile/runtime problem we were unable
   // to store it as a member variable on this trait.

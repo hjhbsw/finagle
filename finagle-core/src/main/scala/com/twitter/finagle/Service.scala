@@ -157,7 +157,7 @@ abstract class ServiceFactory[-Req, +Rep]
     {
         val req1 = req.asInstanceOf[H2Header]
 
-        req1.headers.get("call-id") match {
+        req1.headers.get("loadbalance-key") match {
 
           case None | Some("") => this(ClientConnection.nil);
 
